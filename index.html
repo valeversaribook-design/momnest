@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MomNest — A Community for Growing Families</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ── CONFIG ─────────────────────────────────────────── */
+:root {
+  --bg:       #FAF7F2;
+  --surface:  #FFFFFF;
+  --border:   #EDE8E0;
+  --text:     #2D2416;
+  --muted:    #8A7F72;
+  --coral:    #D4826A;
+  --sage:     #7A9E7E;
+  --rose:     #C97488;
+  --blue:     #6B9BB8;
+  --gold:     #C9A96E;
+  --purple:   #9B8FA8;
+  --teal:     #6A9E9F;
+  --radius:   14px;
+  --shadow:   0 2px 12px rgba(45,36,22,.08);
+  --shadow-lg:0 8px 32px rgba(45,36,22,.12);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+h1,h2,h3,h4 { font-family: 'Fraunces', serif; font-weight: 600; line-height: 1.2; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+img { display: block; max-width: 100%; }
+input, textarea { font-family: inherit; }
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── NAV ─────────────────────────────────────────────── */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(250,247,242,.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 24px; height: 60px;
+}
+.nav-logo {
+  font-family: 'Fraunces', serif; font-size: 1.35rem;
+  font-weight: 700; color: var(--coral);
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-logo span { font-size: 1.4rem; }
+.nav-spacer { flex: 1; }
+.nav-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--border); border-radius: 100px;
+  padding: 6px 14px; width: 220px;
+}
+.nav-search input {
+  background: none; border: none; outline: none;
+  font-size: .88rem; color: var(--text); width: 100%;
+}
+.nav-search input::placeholder { color: var(--muted); }
+.nav-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px; border-radius: 100px;
+  font-size: .85rem; font-weight: 700; border: none;
+  transition: transform .15s, box-shadow .15s;
+}
+.nav-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.1); }
+.btn-primary { background: var(--coral); color: #fff; }
+.btn-outline { background: none; border: 1.5px solid var(--border); color: var(--text); }
+.nav-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--border);
+  cursor: pointer;
+}
+.nav-user { display: flex; align-items: center; gap: 10px; }
+.nav-user-name { font-size: .85rem; font-weight: 700; }
+
+/* ── HERO ─────────────────────────────────────────────── */
+.hero {
+  background: linear-gradient(135deg, #FDF6EF 0%, #FAF0EC 50%, #F5F0F8 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 48px 24px 40px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 20% 50%, rgba(212,130,106,.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 30%, rgba(107,155,184,.08) 0%, transparent 50%);
+}
+.hero-inner { position: relative; max-width: 640px; margin: 0 auto; }
+.hero-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(212,130,106,.12); color: var(--coral);
+  font-size: .78rem; font-weight: 700; letter-spacing: .06em;
+  padding: 4px 14px; border-radius: 100px; margin-bottom: 16px;
+}
+.hero h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); color: var(--text); margin-bottom: 10px; }
+.hero h1 em { font-style: italic; color: var(--coral); }
+.hero p { font-size: 1.02rem; color: var(--muted); max-width: 480px; margin: 0 auto 24px; }
+.hero-books {
+  display: flex; gap: 12px; justify-content: center; margin-top: 8px;
+}
+.hero-book {
+  width: 64px; height: 64px; border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 6px 20px rgba(0,0,0,.14);
+  transition: transform .2s;
+}
+.hero-book:hover { transform: translateY(-4px) rotate(-2deg); }
+.hero-stats {
+  display: flex; gap: 28px; justify-content: center; margin-top: 24px;
+  font-size: .85rem; color: var(--muted);
+}
+.hero-stats strong { color: var(--text); font-weight: 700; }
+
+/* ── MAIN LAYOUT ─────────────────────────────────────── */
+.main { max-width: 1080px; margin: 0 auto; padding: 32px 24px; display: grid; grid-template-columns: 280px 1fr; gap: 28px; }
+@media(max-width:768px) { .main { grid-template-columns: 1fr; } .sidebar { order: 2; } }
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.sidebar { display: flex; flex-direction: column; gap: 20px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-family: 'Fraunces', serif; font-size: .95rem;
+  font-weight: 600; color: var(--muted); letter-spacing: .04em;
+  text-transform: uppercase; margin-bottom: 14px;
+}
+.cat-list { display: flex; flex-direction: column; gap: 4px; }
+.cat-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 8px;
+  cursor: pointer; transition: background .15s;
+  font-size: .9rem;
+}
+.cat-item:hover { background: var(--bg); }
+.cat-item.active { background: var(--bg); font-weight: 700; }
+.cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.cat-name { flex: 1; }
+.cat-count {
+  font-size: .75rem; color: var(--muted);
+  background: var(--bg); padding: 1px 7px; border-radius: 100px;
+}
+
+.book-promo {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.book-mini {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px; border-radius: 10px; border: 1px solid var(--border);
+  transition: border-color .15s, box-shadow .15s;
+}
+.book-mini:hover { border-color: var(--coral); box-shadow: 0 2px 10px rgba(212,130,106,.12); }
+.book-mini img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; }
+.book-mini-info { flex: 1; }
+.book-mini-title { font-size: .82rem; font-weight: 700; line-height: 1.2; }
+.book-mini-sub { font-size: .72rem; color: var(--muted); }
+.book-mini-btn {
+  font-size: .72rem; font-weight: 700; color: var(--coral);
+  background: rgba(212,130,106,.1); border: none;
+  padding: 4px 10px; border-radius: 100px;
+}
+
+.online-list { display: flex; flex-direction: column; gap: 8px; }
+.online-user { display: flex; align-items: center; gap: 8px; font-size: .85rem; }
+.online-user img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.online-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; }
+
+/* ── FEED ─────────────────────────────────────────────── */
+.feed { display: flex; flex-direction: column; gap: 0; }
+.feed-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+}
+.feed-title { font-family: 'Fraunces', serif; font-size: 1.4rem; }
+.feed-filters { display: flex; gap: 6px; }
+.filter-btn {
+  padding: 5px 14px; border-radius: 100px; font-size: .82rem;
+  font-weight: 700; border: 1.5px solid var(--border);
+  background: none; color: var(--muted); transition: all .15s;
+}
+.filter-btn.active { background: var(--text); color: #fff; border-color: var(--text); }
+.filter-btn:hover:not(.active) { border-color: var(--text); color: var(--text); }
+
+/* Thread card */
+.thread-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow); margin-bottom: 10px;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s;
+  position: relative; overflow: hidden;
+}
+.thread-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; border-radius: 3px 0 0 3px;
+  background: var(--cat-color, var(--border));
+  transition: width .2s;
+}
+.thread-card:hover { border-color: rgba(212,130,106,.3); box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+.thread-card:hover::before { width: 4px; }
+
+.thread-top { display: flex; align-items: flex-start; gap: 12px; }
+.thread-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 2px solid var(--border); }
+.thread-meta { flex: 1; min-width: 0; }
+.thread-author { font-size: .82rem; font-weight: 700; color: var(--text); }
+.thread-time { font-size: .75rem; color: var(--muted); }
+.thread-cat-badge {
+  font-size: .7rem; font-weight: 700; padding: 2px 9px; border-radius: 100px;
+  background: rgba(255,255,255,.8); border: 1px solid var(--border);
+  color: var(--cat-color, var(--muted));
+}
+.thread-title { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 600; margin: 10px 0 6px; line-height: 1.3; }
+.thread-body { font-size: .88rem; color: var(--muted); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.thread-footer { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+.thread-stat { display: flex; align-items: center; gap: 5px; font-size: .8rem; color: var(--muted); }
+.thread-stat svg { width: 14px; height: 14px; }
+.thread-like-btn {
+  display: flex; align-items: center; gap: 5px; font-size: .8rem;
+  background: none; border: none; color: var(--muted); padding: 0;
+  transition: color .15s;
+}
+.thread-like-btn:hover, .thread-like-btn.liked { color: var(--rose); }
+.thread-spacer { flex: 1; }
+.thread-read { font-size: .78rem; color: var(--coral); font-weight: 700; }
+
+/* ── MODAL (thread view + auth) ─────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(45,36,22,.45);
+  backdrop-filter: blur(4px); z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface); border-radius: 20px;
+  width: 100%; max-width: 680px; max-height: 88vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0,0,0,.18);
+  transform: translateY(20px); transition: transform .2s;
+}
+.modal-overlay.open .modal { transform: none; }
+.modal-header {
+  padding: 20px 24px 0; display: flex; align-items: flex-start; gap: 12px;
+}
+.modal-close {
+  margin-left: auto; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg); border: none; font-size: 1.1rem;
+  color: var(--muted); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background .15s;
+}
+.modal-close:hover { background: var(--border); }
+.modal-body { flex: 1; overflow-y: auto; padding: 20px 24px 24px; }
+.modal-thread-title { font-family: 'Fraunces', serif; font-size: 1.35rem; font-weight: 700; margin-bottom: 8px; }
+.modal-thread-body { font-size: .93rem; line-height: 1.7; color: var(--text); margin-bottom: 20px; }
+.modal-author { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.modal-author img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.modal-author-name { font-size: .88rem; font-weight: 700; }
+.modal-author-time { font-size: .75rem; color: var(--muted); }
+
+.replies-title { font-family: 'Fraunces', serif; font-size: 1rem; color: var(--muted); margin-bottom: 14px; border-top: 1px solid var(--border); padding-top: 18px; }
+.reply-item { display: flex; gap: 10px; margin-bottom: 18px; }
+.reply-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.reply-bubble { background: var(--bg); border-radius: 0 12px 12px 12px; padding: 12px 14px; flex: 1; }
+.reply-name { font-size: .8rem; font-weight: 700; margin-bottom: 4px; }
+.reply-body { font-size: .88rem; line-height: 1.55; }
+.reply-meta { font-size: .72rem; color: var(--muted); margin-top: 6px; }
+.reply-likes { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; cursor: pointer; }
+
+.reply-form { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 18px; }
+.reply-form h4 { font-size: .9rem; margin-bottom: 10px; color: var(--muted); }
+.reply-form textarea {
+  width: 100%; min-height: 90px; padding: 12px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: .9rem; resize: vertical; outline: none;
+  background: var(--bg); color: var(--text); transition: border-color .15s;
+}
+.reply-form textarea:focus { border-color: var(--coral); }
+.reply-form-footer { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+/* ── AUTH MODAL ─────────────────────────────────────── */
+.auth-modal { max-width: 420px; }
+.auth-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+.auth-tab {
+  flex: 1; padding: 12px; text-align: center; font-weight: 700;
+  font-size: .9rem; border: none; background: none; color: var(--muted);
+  border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s;
+}
+.auth-tab.active { color: var(--coral); border-bottom-color: var(--coral); }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: .82rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 5px; }
+.form-input {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: .92rem; outline: none; background: var(--bg);
+  color: var(--text); transition: border-color .15s;
+}
+.form-input:focus { border-color: var(--coral); }
+.form-hint { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+.form-error { font-size: .82rem; color: #E05B5B; margin-top: 8px; }
+.btn-full { width: 100%; padding: 12px; font-size: .95rem; font-weight: 700; border-radius: 100px; }
+.auth-divider { text-align: center; font-size: .8rem; color: var(--muted); margin: 14px 0; }
+
+/* ── NEW THREAD ─────────────────────────────────────── */
+.new-thread-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1.5px dashed var(--border);
+  border-radius: var(--radius); padding: 14px 18px;
+  margin-bottom: 16px; cursor: pointer; transition: border-color .15s;
+}
+.new-thread-bar:hover { border-color: var(--coral); }
+.new-thread-input {
+  flex: 1; background: var(--bg); border: none; border-radius: 100px;
+  padding: 8px 14px; font-size: .9rem; color: var(--muted);
+  pointer-events: none;
+}
+.nt-icon { font-size: 1.1rem; }
+
+/* ── TOAST ──────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 300;
+  background: var(--text); color: #fff; padding: 12px 20px;
+  border-radius: 100px; font-size: .88rem; font-weight: 700;
+  box-shadow: var(--shadow-lg); transform: translateY(80px);
+  transition: transform .3s; pointer-events: none;
+}
+.toast.show { transform: none; }
+
+/* ── LOADING ─────────────────────────────────────────── */
+.loading { display: flex; justify-content: center; padding: 40px; }
+.spinner {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--coral);
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── EMPTY STATE ─────────────────────────────────────── */
+.empty {
+  text-align: center; padding: 60px 20px;
+  color: var(--muted);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty h3 { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--text); margin-bottom: 6px; }
+
+/* ── FOOTER ─────────────────────────────────────────── */
+.site-footer {
+  background: #2D2416; color: rgba(255,255,255,.6);
+  text-align: center; padding: 28px 24px;
+  font-size: .82rem; margin-top: auto;
+}
+.site-footer strong { color: #fff; }
+
+/* ── RESPONSIVE ─────────────────────────────────────── */
+@media(max-width:600px) {
+  .nav-search { display: none; }
+  .hero-stats { gap: 16px; }
+  .modal { border-radius: 16px 16px 0 0; max-height: 92vh; margin-top: auto; align-self: flex-end; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+}
+
+/* ── PROFILE PIC UPLOAD PREVIEW ─────────────────────── */
+.avatar-upload { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.avatar-preview { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+.avatar-upload-btn {
+  font-size: .82rem; font-weight: 700; color: var(--coral);
+  background: rgba(212,130,106,.1); border: none; padding: 6px 14px; border-radius: 100px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><span>🪺</span> MomNest</div>
+  <div class="nav-spacer"></div>
+  <div class="nav-search">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;color:#8A7F72;flex-shrink:0"><circle cx="8.5" cy="8.5" r="5.5"/><line x1="13" y1="13" x2="17" y2="17"/></svg>
+    <input type="text" placeholder="Search threads…" id="searchInput" oninput="handleSearch(this.value)"/>
+  </div>
+  <div id="navAuth">
+    <button class="nav-btn btn-outline" onclick="openAuth('login')">Sign in</button>
+    <button class="nav-btn btn-primary" onclick="openAuth('signup')" style="margin-left:6px">Join Free</button>
+  </div>
+  <div id="navUser" style="display:none" class="nav-user">
+    <img src="" alt="" class="nav-avatar" id="navAvatar" onclick="showToast('Profile page coming soon!')"/>
+    <span class="nav-user-name" id="navUserName"></span>
+    <button class="nav-btn btn-outline" onclick="handleSignOut()" style="font-size:.78rem;padding:5px 12px">Sign out</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-pill">🌸 A safe space for growing families</div>
+    <h1>Welcome to <em>MomNest</em></h1>
+    <p>Connect with moms navigating the beautiful, chaotic journey of welcoming a new baby while raising their first child.</p>
+    <div class="hero-books">
+      <img src="sister.jpg" alt="How to be a Big Sister" class="hero-book" title="How to be a Big Sister by Maggie Marvel"
+           onerror="this.src='https://images-na.ssl-images-amazon.com/images/I/61RnDLyR2mL._SL1000_.jpg'"/>
+      <img src="brother.jpg" alt="How to be a Big Brother" class="hero-book" title="How to be a Big Brother by Maggie Marvel"
+           onerror="this.src='https://i.pravatar.cc/64?img=20'"/>
+    </div>
+    <div class="hero-stats">
+      <div><strong id="statMembers">2,847</strong> members</div>
+      <div><strong id="statThreads">—</strong> discussions</div>
+      <div><strong id="statPosts">—</strong> replies</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="card">
+      <div class="card-title">Browse Topics</div>
+      <div class="cat-list" id="catList">
+        <div class="cat-item active" onclick="filterCat(null,this)" style="--cat-color:#D4826A">
+          <div class="cat-dot" style="background:#D4826A"></div>
+          <span class="cat-name">All Topics</span>
+          <span class="cat-count" id="allCount">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Featured Books</div>
+      <div class="book-promo">
+        <a href="https://www.amazon.com/review/create-review/?asin=B0G3W9ZN7C" target="_blank" class="book-mini">
+          <img src="sister.jpg" alt="Big Sister"
+               onerror="this.src='https://images-na.ssl-images-amazon.com/images/I/61RnDLyR2mL._SL1000_.jpg'"/>
+          <div class="book-mini-info">
+            <div class="book-mini-title">How to be a Big Sister</div>
+            <div class="book-mini-sub">Maggie Marvel</div>
+          </div>
+          <button class="book-mini-btn">⭐ Review</button>
+        </a>
+        <a href="#" class="book-mini">
+          <img src="brother.jpg" alt="Big Brother"
+               onerror="this.src='https://placehold.co/44x44/6B9BB8/fff?text=BB'"/>
+          <div class="book-mini-info">
+            <div class="book-mini-title">How to be a Big Brother</div>
+            <div class="book-mini-sub">Maggie Marvel</div>
+          </div>
+          <button class="book-mini-btn">⭐ Review</button>
+        </a>
+      </div>
+    </div>
+
+    <div class="card" id="onlineCard">
+      <div class="card-title">Recently Active</div>
+      <div class="online-list" id="onlineList">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- FEED -->
+  <main class="feed">
+    <div class="feed-header">
+      <h2 class="feed-title" id="feedTitle">All Topics</h2>
+      <div class="feed-filters">
+        <button class="filter-btn active" onclick="setSort('recent',this)">Recent</button>
+        <button class="filter-btn" onclick="setSort('popular',this)">Popular</button>
+      </div>
+    </div>
+
+    <div class="new-thread-bar" onclick="openNewThread()">
+      <span class="nt-icon">✏️</span>
+      <input class="new-thread-input" type="text" placeholder="Share something with the community…" readonly/>
+      <button class="nav-btn btn-primary" style="font-size:.82rem;padding:6px 16px">Post</button>
+    </div>
+
+    <div id="threadList">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <strong>MomNest</strong> — A community for growing families &nbsp;|&nbsp;
+  Inspired by <em>How to be a Big Sister</em> &amp; <em>How to be a Big Brother</em> by Maggie Marvel
+</footer>
+
+</div><!-- /app -->
+
+<!-- ══ THREAD MODAL ════════════════════════════════════════ -->
+<div class="modal-overlay" id="threadModal" onclick="closeModalBackdrop(event,'threadModal')">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <div id="threadModalMeta" style="flex:1"></div>
+      <button class="modal-close" onclick="closeModal('threadModal')">✕</button>
+    </div>
+    <div class="modal-body" id="threadModalBody"></div>
+  </div>
+</div>
+
+<!-- ══ AUTH MODAL ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="authModal" onclick="closeModalBackdrop(event,'authModal')">
+  <div class="modal auth-modal">
+    <div class="modal-header" style="padding-bottom:12px">
+      <div><h2 style="font-size:1.3rem">Join <span style="color:var(--coral)">MomNest</span></h2></div>
+      <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="signupTab" onclick="switchAuthTab('signup')">Create Account</button>
+      </div>
+      <div id="authError" class="form-error" style="display:none"></div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="loginEmail" placeholder="you@example.com" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="loginPassword" placeholder="••••••••" required/>
+        </div>
+        <button type="submit" class="nav-btn btn-primary btn-full">Sign In</button>
+      </form>
+
+      <!-- SIGNUP FORM -->
+      <form id="signupForm" style="display:none" onsubmit="handleSignup(event)">
+        <div class="avatar-upload">
+          <img src="https://i.pravatar.cc/56?img=47" alt="" class="avatar-preview" id="avatarPreview"/>
+          <div>
+            <div style="font-size:.85rem;font-weight:700;margin-bottom:4px">Profile Photo</div>
+            <input type="url" class="form-input" id="avatarUrl" placeholder="Paste image URL (optional)"
+                   style="font-size:.8rem;padding:6px 10px" oninput="updateAvatarPreview(this.value)"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" type="text" id="signupName" placeholder="Emma Harris" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="form-input" type="text" id="signupUsername" placeholder="emma_harris" required/>
+          <div class="form-hint">Visible to other members</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="signupEmail" placeholder="you@example.com" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" type="password" id="signupPassword" placeholder="Min 8 characters" required minlength="8"/>
+        </div>
+        <button type="submit" class="nav-btn btn-primary btn-full">Create Account & Join</button>
+        <div class="auth-divider">Your posts will appear alongside our community of 50+ moms 🌸</div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NEW THREAD MODAL ════════════════════════════════════ -->
+<div class="modal-overlay" id="newThreadModal" onclick="closeModalBackdrop(event,'newThreadModal')">
+  <div class="modal">
+    <div class="modal-header" style="padding-bottom:12px">
+      <h2 style="font-size:1.2rem">Start a New Discussion</h2>
+      <button class="modal-close" onclick="closeModal('newThreadModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form onsubmit="handleNewThread(event)">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input" id="ntCategory" required>
+            <option value="">Select a topic…</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input class="form-input" type="text" id="ntTitle" placeholder="What's on your mind?" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your message</label>
+          <textarea class="form-input" id="ntBody" rows="5" placeholder="Share your story, question, or tips with the community…" required style="resize:vertical"></textarea>
+        </div>
+        <button type="submit" class="nav-btn btn-primary btn-full">Post Discussion</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONFIG — Replace with your Supabase project details
+// ══════════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://agbsophkecuruzvflqpa.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_2a8NcR5YFPoRVbkCfQWnJQ_8EequnKx';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── State ─────────────────────────────────────────────
+let currentUser    = null;
+let currentProfile = null;
+let currentCatId   = null;
+let currentSort    = 'recent';
+let categories     = [];
+let allThreads     = [];
+let searchQuery    = '';
+
+// ── Bootstrap ─────────────────────────────────────────
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if (session) await loadUserProfile(session.user);
+
+  db.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      await loadUserProfile(session.user);
+      closeModal('authModal');
+      showToast('Welcome to MomNest! 🌸');
+    }
+    if (event === 'SIGNED_OUT') {
+      currentUser = null; currentProfile = null;
+      document.getElementById('navAuth').style.display = 'flex';
+      document.getElementById('navUser').style.display = 'none';
+    }
+  });
+
+  await loadCategories();
+  await loadThreads();
+  loadOnlineUsers();
+  updateStats();
+})();
+
+// ── Auth helpers ──────────────────────────────────────
+async function loadUserProfile(user) {
+  currentUser = user;
+  const { data } = await db.from('profiles').select('*').eq('auth_id', user.id).single();
+  currentProfile = data;
+  const name  = data?.full_name || data?.username || user.email.split('@')[0];
+  const avatar = data?.avatar_url || `https://i.pravatar.cc/34?u=${user.id}`;
+  document.getElementById('navAuth').style.display = 'none';
+  document.getElementById('navUser').style.display = 'flex';
+  document.getElementById('navUserName').textContent = name.split(' ')[0];
+  document.getElementById('navAvatar').src = avatar;
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const pw    = document.getElementById('loginPassword').value;
+  showAuthError('');
+  const { error } = await db.auth.signInWithPassword({ email, password: pw });
+  if (error) showAuthError(error.message);
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+  const name     = document.getElementById('signupName').value.trim();
+  const username = document.getElementById('signupUsername').value.trim().toLowerCase().replace(/\s/g,'_');
+  const email    = document.getElementById('signupEmail').value;
+  const pw       = document.getElementById('signupPassword').value;
+  const avatar   = document.getElementById('avatarUrl').value || `https://i.pravatar.cc/150?u=${Date.now()}`;
+  showAuthError('');
+  const { data, error } = await db.auth.signUp({
+    email, password: pw,
+    options: { data: { full_name: name, username, avatar_url: avatar } }
+  });
+  if (error) { showAuthError(error.message); return; }
+  // Also update profile directly in case trigger didn't fire
+  if (data.user) {
+    await db.from('profiles').upsert({
+      auth_id: data.user.id, username, full_name: name, avatar_url: avatar
+    }, { onConflict: 'auth_id' });
+  }
+  showToast('Account created! Check your email to confirm. 🌸');
+}
+
+async function handleSignOut() {
+  await db.auth.signOut();
+  showToast('See you soon! 👋');
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg; el.style.display = msg ? 'block' : 'none';
+}
+
+function updateAvatarPreview(url) {
+  if (url) document.getElementById('avatarPreview').src = url;
+}
+
+// ── Categories ────────────────────────────────────────
+async function loadCategories() {
+  const { data } = await db.from('categories').select('*').order('name');
+  if (!data) return;
+  categories = data;
+  const catList = document.getElementById('catList');
+  const ntSelect = document.getElementById('ntCategory');
+  // keep "all" item, add rest
+  data.forEach(cat => {
+    const li = document.createElement('div');
+    li.className = 'cat-item';
+    li.style.setProperty('--cat-color', cat.color);
+    li.innerHTML = `<div class="cat-dot" style="background:${cat.color}"></div>
+      <span class="cat-name">${cat.name}</span>
+      <span class="cat-count">${cat.post_count || 0}</span>`;
+    li.onclick = () => filterCat(cat.id, li);
+    catList.appendChild(li);
+
+    const opt = document.createElement('option');
+    opt.value = cat.id; opt.textContent = cat.name;
+    ntSelect.appendChild(opt);
+  });
+}
+
+function filterCat(catId, el) {
+  currentCatId = catId;
+  document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  const cat = catId ? categories.find(c => c.id === catId) : null;
+  document.getElementById('feedTitle').textContent = cat ? cat.name : 'All Topics';
+  renderThreads();
+}
+
+// ── Threads ───────────────────────────────────────────
+async function loadThreads() {
+  document.getElementById('threadList').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  const { data } = await db.from('threads')
+    .select(`*, author:profiles(id,username,full_name,avatar_url), category:categories(id,name,color,slug)`)
+    .order('created_at', { ascending: false });
+  allThreads = data || [];
+  updateStats();
+  renderThreads();
+}
+
+function renderThreads() {
+  let threads = [...allThreads];
+  if (currentCatId) threads = threads.filter(t => t.category_id === currentCatId);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    threads = threads.filter(t => t.title.toLowerCase().includes(q) || t.body.toLowerCase().includes(q));
+  }
+  if (currentSort === 'popular') threads.sort((a,b) => (b.like_count||0) - (a.like_count||0));
+
+  const el = document.getElementById('threadList');
+  if (!threads.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🌸</div><h3>No discussions yet</h3><p>Be the first to start a conversation!</p></div>`;
+    return;
+  }
+
+  el.innerHTML = threads.map(t => {
+    const author = t.author || {};
+    const cat    = t.category || {};
+    const avatar = author.avatar_url || `https://i.pravatar.cc/40?u=${author.id}`;
+    const name   = author.full_name || author.username || 'A member';
+    const timeAgo = formatTime(t.created_at);
+    return `<div class="thread-card" style="--cat-color:${cat.color||'#D4826A'}" onclick="openThread('${t.id}')">
+      <div class="thread-top">
+        <img src="${avatar}" alt="${name}" class="thread-avatar" onerror="this.src='https://i.pravatar.cc/40?u=${t.id}'"/>
+        <div class="thread-meta">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="thread-author">${name}</span>
+            <span class="thread-time">${timeAgo}</span>
+            ${cat.name ? `<span class="thread-cat-badge" style="--cat-color:${cat.color}">${cat.name}</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="thread-title">${escHtml(t.title)}</div>
+      <div class="thread-body">${escHtml(t.body)}</div>
+      <div class="thread-footer">
+        <button class="thread-like-btn" onclick="likeThread(event,'${t.id}',this)">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg>
+          ${t.like_count || 0}
+        </button>
+        <div class="thread-stat">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 8a8 8 0 01-8 8H2l2-2A8 8 0 115 4.5"/></svg>
+          ${t.reply_count || 0} replies
+        </div>
+        <div class="thread-spacer"></div>
+        <span class="thread-read">Read →</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Open thread ───────────────────────────────────────
+async function openThread(threadId) {
+  const modal  = document.getElementById('threadModal');
+  const body   = document.getElementById('threadModalBody');
+  const meta   = document.getElementById('threadModalMeta');
+  body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  openModal('threadModal');
+
+  const { data: thread } = await db.from('threads')
+    .select(`*, author:profiles(id,username,full_name,avatar_url), category:categories(name,color)`)
+    .eq('id', threadId).single();
+
+  const { data: posts } = await db.from('posts')
+    .select(`*, author:profiles(id,username,full_name,avatar_url)`)
+    .eq('thread_id', threadId).order('created_at');
+
+  const cat    = thread.category || {};
+  const author = thread.author || {};
+  const avtr   = author.avatar_url || `https://i.pravatar.cc/36?u=${author.id}`;
+
+  meta.innerHTML = `<span class="thread-cat-badge" style="--cat-color:${cat.color||'#D4826A'};font-size:.78rem;padding:3px 10px">${cat.name||''}</span>`;
+
+  const repliesHtml = (posts||[]).map(p => {
+    const pa = p.author || {};
+    const pav = pa.avatar_url || `https://i.pravatar.cc/32?u=${pa.id}`;
+    return `<div class="reply-item">
+      <img src="${pav}" alt="${pa.full_name||''}" class="reply-avatar" onerror="this.src='https://i.pravatar.cc/32?u=${p.id}'"/>
+      <div class="reply-bubble">
+        <div class="reply-name">${escHtml(pa.full_name||pa.username||'Member')}</div>
+        <div class="reply-body">${escHtml(p.body)}</div>
+        <div class="reply-meta">${formatTime(p.created_at)}
+          <span class="reply-likes">♥ ${p.like_count||0}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const replyFormHtml = currentProfile
+    ? `<div class="reply-form">
+        <h4>Add your reply</h4>
+        <textarea id="replyBody_${threadId}" placeholder="Share your thoughts, experience, or advice…"></textarea>
+        <div class="reply-form-footer">
+          <button class="nav-btn btn-primary" onclick="submitReply('${threadId}')">Post Reply</button>
+        </div>
+      </div>`
+    : `<div class="reply-form" style="text-align:center;padding:20px 0">
+        <p style="color:var(--muted);margin-bottom:12px">Sign in to join the conversation 🌸</p>
+        <button class="nav-btn btn-primary" onclick="openAuth('login')">Sign In to Reply</button>
+      </div>`;
+
+  body.innerHTML = `
+    <div class="modal-author">
+      <img src="${avtr}" alt="${author.full_name||''}" onerror="this.src='https://i.pravatar.cc/36?u=${thread.id}'"/>
+      <div>
+        <div class="modal-author-name">${escHtml(author.full_name||author.username||'Member')}</div>
+        <div class="modal-author-time">${formatTime(thread.created_at)}</div>
+      </div>
+    </div>
+    <h2 class="modal-thread-title">${escHtml(thread.title)}</h2>
+    <div class="modal-thread-body">${escHtml(thread.body)}</div>
+    ${posts?.length ? `<div class="replies-title">${posts.length} ${posts.length===1?'Reply':'Replies'}</div>${repliesHtml}` : '<div class="replies-title" style="color:var(--muted);font-style:italic">No replies yet — be the first!</div>'}
+    ${replyFormHtml}
+  `;
+}
+
+async function submitReply(threadId) {
+  const ta = document.getElementById(`replyBody_${threadId}`);
+  const body = ta?.value?.trim();
+  if (!body) return;
+  if (!currentProfile) { openAuth('login'); return; }
+  const { error } = await db.from('posts').insert({
+    thread_id: threadId,
+    author_id: currentProfile.id,
+    body
+  });
+  if (error) { showToast('Error posting reply. Please try again.'); return; }
+  // increment reply_count
+  await db.rpc('increment_reply_count', { t_id: threadId }).catch(()=>{});
+  showToast('Reply posted! 🌸');
+  openThread(threadId); // refresh
+  loadThreads();
+}
+
+async function likeThread(e, threadId, btn) {
+  e.stopPropagation();
+  if (!currentProfile) { openAuth('login'); return; }
+  const isLiked = btn.classList.contains('liked');
+  if (isLiked) {
+    await db.from('likes').delete().eq('profile_id', currentProfile.id).eq('thread_id', threadId);
+    await db.from('threads').update({ like_count: db.rpc('raw_sql', { sql: `like_count - 1` }) });
+    btn.classList.remove('liked');
+  } else {
+    const { error } = await db.from('likes').insert({ profile_id: currentProfile.id, thread_id: threadId });
+    if (!error) {
+      btn.classList.add('liked');
+      const cur = parseInt(btn.textContent.trim()) || 0;
+      btn.innerHTML = `<svg viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px"><path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/></svg> ${cur+1}`;
+    }
+  }
+}
+
+// ── New thread ────────────────────────────────────────
+function openNewThread() {
+  if (!currentProfile) { openAuth('signup'); return; }
+  openModal('newThreadModal');
+}
+
+async function handleNewThread(e) {
+  e.preventDefault();
+  if (!currentProfile) { openAuth('login'); return; }
+  const catId = document.getElementById('ntCategory').value;
+  const title = document.getElementById('ntTitle').value.trim();
+  const body  = document.getElementById('ntBody').value.trim();
+  if (!catId || !title || !body) return;
+  const { error } = await db.from('threads').insert({
+    category_id: catId, author_id: currentProfile.id, title, body
+  });
+  if (error) { showToast('Error posting. Please try again.'); return; }
+  closeModal('newThreadModal');
+  document.getElementById('ntTitle').value = '';
+  document.getElementById('ntBody').value  = '';
+  showToast('Discussion posted! 🌸');
+  await loadThreads();
+}
+
+// ── Sidebar: online users ─────────────────────────────
+async function loadOnlineUsers() {
+  const { data } = await db.from('profiles').select('id,username,full_name,avatar_url').limit(8);
+  if (!data) return;
+  const el = document.getElementById('onlineList');
+  el.innerHTML = data.map(u => {
+    const av = u.avatar_url || `https://i.pravatar.cc/28?u=${u.id}`;
+    return `<div class="online-user">
+      <img src="${av}" alt="${u.full_name||''}" onerror="this.src='https://i.pravatar.cc/28?u=${u.id}'"/>
+      <span>${escHtml(u.full_name?.split(' ')[0] || u.username || 'Member')}</span>
+      <div class="online-dot" style="margin-left:auto"></div>
+    </div>`;
+  }).join('');
+}
+
+async function updateStats() {
+  const threadCount = allThreads.length;
+  const postCount   = allThreads.reduce((a,t) => a+(t.reply_count||0), 0);
+  document.getElementById('statThreads').textContent = threadCount || '—';
+  document.getElementById('statPosts').textContent   = postCount || '—';
+  document.getElementById('allCount').textContent    = threadCount || '—';
+}
+
+// ── Search ────────────────────────────────────────────
+function handleSearch(q) {
+  searchQuery = q.trim();
+  renderThreads();
+}
+
+function setSort(sort, btn) {
+  currentSort = sort;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderThreads();
+}
+
+// ── Modal helpers ─────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalBackdrop(e, id) {
+  if (e.target.id === id) closeModal(id);
+}
+function openAuth(tab) {
+  switchAuthTab(tab);
+  openModal('authModal');
+}
+function switchAuthTab(tab) {
+  document.getElementById('loginForm').style.display   = tab==='login'  ? 'block' : 'none';
+  document.getElementById('signupForm').style.display  = tab==='signup' ? 'block' : 'none';
+  document.getElementById('loginTab').classList.toggle('active',  tab==='login');
+  document.getElementById('signupTab').classList.toggle('active', tab==='signup');
+  showAuthError('');
+}
+
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Helpers ───────────────────────────────────────────
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso), now = new Date();
+  const diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  if (diff < 86400*30) return `${Math.floor(diff/86400)}d ago`;
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+// Realtime: auto-refresh when new threads/posts arrive
+db.channel('forum')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'threads' }, loadThreads)
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts'  }, () => {})
+  .subscribe();
+
+// Keyboard close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['threadModal','authModal','newThreadModal'].forEach(closeModal);
+  }
+});
+</script>
+</body>
+</html>
